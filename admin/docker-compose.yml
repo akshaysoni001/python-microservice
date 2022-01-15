@@ -1,0 +1,51 @@
+version: '2'
+
+services:
+    backend:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      command: 'python3 manage.py runserver 0.0.0.0:8000'
+      ports:
+        - 8000:8000
+      volumes:
+        - .:/app
+      depends_on:
+        - db
+      networks:
+        - df_rabbit
+    
+    queue:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      restart: always
+      entrypoint: 'python3 -u consumer.py'
+      depends_on:
+        - db
+      networks:
+        - df_rabbit
+
+
+    db:
+      image: mysql:5.7.22
+      restart: always
+      environment:
+        MYSQL_DATABASE: admin
+        MYSQL_USER: root
+        MYSQL_PASSWORD: root
+        MYSQL_ROOT_PASSWORD: root
+      volumes:
+        - .dbdata:/var/lib/mysql
+      ports:
+        - 33066:3306
+      networks:
+       - df_rabbit
+
+networks:
+  df_rabbit:
+    external: true
+
+      
+    
+    
